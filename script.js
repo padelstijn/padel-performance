@@ -1,271 +1,150 @@
-// ========================
-// CONFIG
-// ========================
-const slagen = [
-  "Forehand","Backhand","Volley","Bandeja","Platte Smash","Topspin Smash",
-  "Kicksmash","Vibora","Gancho","Bajada","Lob","Dropshot","Service","Return"
-];
-const maxSets = 5;
-const maxBalls = 7;
+// Slagenlijst
+const slagen = ["Forehand","Backhand","Volley","Bandeja","Platte Smash","Topspin Smash","Kicksmash","Vibora","Gancho","Bajada","Lob","Dropshot","Service","Return"];
+const numPlayers = 4;
+const numSets = 5;
+const bolletjesPerTeam = 7;
 
-const tipsGoed = [
-  "Goed gedaan, dit helpt je net positie te bereiken",
-  "Zeer effectief gebruikt",
-  "Mooi geplaatst, blijf zo spelen",
-  "Prima uitvoering, scoorde vaak punten",
-  "Goed tactisch gebruikt tijdens rallies"
-];
-const tipsVerbeter = [
-  "Verbeter deze slag door meer controle te oefenen",
-  "Focus op timing en positionering",
-  "Probeer consistentie in uitvoering te verhogen",
-  "Train deze slag in korte drills",
-  "Let op voetenwerk bij deze slag"
-];
-
-// ========================
-// SLIDERS GENEREREN
-// ========================
-const slidersDiv = document.getElementById('sliders');
-slagen.forEach(slag=>{
-  const group = document.createElement('div');
-  group.className='slider-group';
-  group.innerHTML = `
-    <label>${slag}: <span id="${slag}Value">50</span>/100</label>
-    <input type="range" id="${slag}" min="0" max="100" value="50">
-    <input type="number" id="${slag}Number" min="0" max="100" value="50">
-  `;
-  slidersDiv.appendChild(group);
-
-  const slider = document.getElementById(slag);
-  const inputNum = document.getElementById(`${slag}Number`);
-  const display = document.getElementById(`${slag}Value`);
-
-  slider.addEventListener('input', ()=>{
-    display.textContent = slider.value;
-    inputNum.value = slider.value;
-  });
-  inputNum.addEventListener('input', ()=>{
-    let val = Number(inputNum.value);
-    if(val<0) val=0; if(val>100) val=100;
-    inputNum.value = val;
-    slider.value = val;
-    display.textContent = val;
-  });
-});
-
-// ========================
-// SETSCORE GENEREREN
-// ========================
-const setsDiv = document.getElementById('sets');
-for(let s=0;s<maxSets;s++){
-  const setContainer = document.createElement('div');
-  setContainer.className='set';
-  setContainer.innerHTML = `<h3>Set ${s+1}</h3>`;
-
-  ['A','B'].forEach(team=>{
-    const row = document.createElement('div');
-    row.className='set-row';
-    row.innerHTML = `<strong>Team ${team}:</strong> `;
-    for(let b=1;b<=maxBalls;b++){
-      const bol = document.createElement('span');
-      bol.className='bolletje';
-      bol.textContent=b;
-      bol.addEventListener('click', ()=> {
-        row.querySelectorAll('.bolletje').forEach(bb=>bb.classList.remove('selected'));
-        bol.classList.add('selected');
-      });
-      row.appendChild(bol);
-    }
-    const inputExtra = document.createElement('input');
-    inputExtra.type='number';
-    inputExtra.min=0;
-    inputExtra.value=0;
-    inputExtra.className='extraScore';
-    inputExtra.style.width='50px';
-    row.appendChild(document.createTextNode(' + '));
-    row.appendChild(inputExtra);
-
-    row.classList.add(`setRow${team}`);
-    setContainer.appendChild(row);
-  });
-  setsDiv.appendChild(setContainer);
-}
-
-// ========================
-// FILE UPLOAD TXT / PDF
-// ========================
-const fileInput = document.getElementById('fileUpload');
-const fileContent = document.getElementById('fileContent');
-fileInput.addEventListener('change', e=>{
-  const file = e.target.files[0];
-  if(!file) return;
-
-  const reader = new FileReader();
-  if(file.type==='application/pdf'){
-    reader.onload = function() {
-      const typedarray = new Uint8Array(this.result);
-      pdfjsLib.getDocument(typedarray).promise.then(pdf=>{
-        let allText='';
-        let count=0;
-        for(let i=1;i<=pdf.numPages;i++){
-          pdf.getPage(i).then(page=>{
-            page.getTextContent().then(content=>{
-              allText += content.items.map(t=>t.str).join(' ')+'\n';
-              count++;
-              if(count===pdf.numPages){ fileContent.textContent = allText; }
-            });
-          });
-        }
-      });
-    }
-    reader.readAsArrayBuffer(file);
-  } else {
-    reader.onload = function(){ fileContent.textContent = this.result; }
-    reader.readAsText(file);
-  }
-});
-
-// ========================
-// ANALYSE
-// ========================
-function analyzeSets(){
-  const setContainers = setsDiv.querySelectorAll('div.set');
-  let setsPlayed=0, setsWonA=0, setsWonB=0, totalGamesA=0, totalGamesB=0;
-
-  setContainers.forEach(set=>{
-    const rowA = set.querySelector('.setRowA');
-    const rowB = set.querySelector('.setRowB');
-
-    let scoreA = Number(rowA.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowA.querySelector('.extraScore').value);
-    let scoreB = Number(rowB.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowB.querySelector('.extraScore').value);
-
-    if(scoreA!==0 || scoreB!==0) setsPlayed++;
-    totalGamesA += scoreA;
-    totalGamesB += scoreB;
-
-    if(scoreA>scoreB) setsWonA++;
-    else if(scoreB>scoreA) setsWonB++;
-  });
-
-  let matchWinner='';
-  if(setsWonA>setsWonB) matchWinner='Team A';
-  else if(setsWonB>setsWonA) matchWinner='Team B';
-  else {
-    if(totalGamesA>totalGamesB) matchWinner='Team A';
-    else if(totalGamesB>totalGamesA) matchWinner='Team B';
-    else matchWinner='Gelijk';
-  }
-
-  return {setsPlayed, setsWonA, setsWonB, totalGamesA, totalGamesB, matchWinner};
-}
-
-function generateTips(){
-  const tips=[];
-  slagen.forEach(s=>{
-    const val = Number(document.getElementById(s).value);
-    if(val<50) tips.push(`${s}: ${tipsVerbeter[Math.floor(Math.random()*tipsVerbeter.length)]}`);
-    else if(val>55) tips.push(`${s}: ${tipsGoed[Math.floor(Math.random()*tipsGoed.length)]}`);
-  });
-  return tips;
-}
-
-function generateFullReport(){
-  const players = [];
-  for(let i=1;i<=4;i++){
-    players.push({
-      name: document.getElementById(`player${i}`).value,
-      notes: document.getElementById(`notes${i}`).value
+window.onload = () => {
+  // Maak sliders per speler
+  for(let p=1;p<=numPlayers;p++){
+    const container = document.getElementById(`sliders${p}`);
+    slagen.forEach(slag=>{
+      const div = document.createElement('div');
+      div.className='slider-group';
+      div.innerHTML = `<label>${slag}: <span id="value${p}_${slag}">50</span></label>
+      <input type="range" min="0" max="100" value="50" id="slider${p}_${slag}"> 
+      <input type="number" min="0" max="100" value="50" id="num${p}_${slag}">`;
+      container.appendChild(div);
+      const slider = document.getElementById(`slider${p}_${slag}`);
+      const num = document.getElementById(`num${p}_${slag}`);
+      const value = document.getElementById(`value${p}_${slag}`);
+      slider.oninput = ()=>{ value.textContent=slider.value; num.value=slider.value;}
+      num.oninput = ()=>{ value.textContent=num.value; slider.value=num.value;}
     });
   }
-  const location = document.getElementById('location').value;
-  const reason = document.getElementById('matchReason').value;
-  const duration = document.getElementById('matchDuration').value;
 
-  const result = analyzeSets();
+  // Maak sets bolletjes
+  const setsDiv = document.getElementById('sets');
+  for(let s=1;s<=numSets;s++){
+    const row = document.createElement('div');
+    row.className='set-row';
+    row.innerHTML = `<strong>Set ${s}:</strong> Team A: <span id="teamA${s}"></span> Team B: <span id="teamB${s}"></span>`;
+    setsDiv.appendChild(row);
+    // Bolletjes team A
+    for(let i=1;i<=bolletjesPerTeam;i++){
+      const b = document.createElement('div');
+      b.className='bolletje'; b.textContent=i;
+      b.onclick=()=>{ selectBolletjes(`teamA${s}`,i);}
+      document.getElementById(`teamA${s}`).appendChild(b);
+    }
+    // Bolletjes team B
+    for(let i=1;i<=bolletjesPerTeam;i++){
+      const b = document.createElement('div');
+      b.className='bolletje'; b.textContent=i;
+      b.onclick=()=>{ selectBolletjes(`teamB${s}`,i);}
+      document.getElementById(`teamB${s}`).appendChild(b);
+    }
+  }
 
-  let report = `🎾 Wedstrijdrapport ${new Date().toLocaleString()}\n`;
-  report += `Locatie: ${location}\n`;
-  report += `Reden: ${reason}\n`;
-  report += `Duur: ${duration} minuten\n\n`;
+  // Analyse buttons
+  document.getElementById('makeAnalysisTop').onclick = makeAnalysis;
+  document.getElementById('makeAnalysisBottom').onclick = makeAnalysis;
 
-  report += `Spelers:\n`;
-  players.forEach(p=> report += `${p.name}\n`);
-  report += '\n';
+  // Export buttons
+  document.getElementById('exportTXT').onclick = ()=>exportTXT();
+  document.getElementById('exportPDF').onclick = ()=>exportPDF();
+  document.getElementById('exportWhatsApp').onclick = ()=>exportWhatsApp();
 
-  report += `📊 Slag-analyse (door eerste speler ingevuld):\n`;
-  slagen.forEach(s=>{
-    const val = document.getElementById(s).value;
-    report += `${s}: ${val}/100\n`;
-  });
-
-  report += `\n🏆 Setscores:\n`;
-  const setContainers = setsDiv.querySelectorAll('div.set');
-  setContainers.forEach((set,index)=>{
-    const rowA = set.querySelector('.setRowA');
-    const rowB = set.querySelector('.setRowB');
-
-    let scoreA = Number(rowA.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowA.querySelector('.extraScore').value);
-    let scoreB = Number(rowB.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowB.querySelector('.extraScore').value);
-
-    if(scoreA===0 && scoreB===0) return; // niet gespeeld
-    let winner = scoreA>scoreB?'Team A':scoreB>scoreA?'Team B':'Gelijk';
-    report += `Set ${index+1}: ${scoreA} - ${scoreB} → Winnaar: ${winner}\n`;
-  });
-
-  report += `\nAantal sets gespeeld: ${result.setsPlayed}\n`;
-  report += `Totaal games: ${result.totalGamesA}-${result.totalGamesB}\n`;
-  report += `Winnaar match: ${result.matchWinner}\n`;
-
-  report += `\n🧠 AI Analyse & Tips:\n`;
-  const tips = generateTips();
-  tips.forEach(t=>report += `- ${t}\n`);
-
-  report += `\nPersoonlijke observaties:\n`;
-  players.forEach(p=>{
-    if(p.notes) report += `${p.name}: ${p.notes}\n`;
-  });
-
-  return report;
+  // File upload
+  document.getElementById('fileUpload').onchange = handleFile;
 }
 
-// ========================
-// EVENT LISTENERS
-// ========================
-const reportOutput = document.getElementById('reportOutput');
+// Kies bolletjes
+function selectBolletjes(id,num){
+  const container = document.getElementById(id);
+  Array.from(container.children).forEach(c=>c.classList.remove('selected'));
+  for(let i=0;i<num;i++){ container.children[i].classList.add('selected');}
+}
 
-document.getElementById('makeAnalysis').addEventListener('click', ()=>{
-  reportOutput.textContent = generateFullReport();
-});
+// Simpele AI analyse
+function aiAnalyse(){
+  let result = {};
+  for(let p=1;p<=numPlayers;p++){
+    let scores = [];
+    slagen.forEach(slag=>{
+      scores.push({slag:slag, value:parseInt(document.getElementById(`slider${p}_${slag}`).value)});
+    });
+    scores.sort((a,b)=>b.value-a.value);
+    const sterkste = scores[0].slag;
+    const verbeterpunten = scores.filter(s=>s.value<50).map(s=>s.slag);
+    result[`player${p}`] = {scores, sterkste, verbeterpunten};
+  }
+  return result;
+}
 
-document.getElementById('exportTXT').addEventListener('click', ()=>{
-  const blob = new Blob([generateFullReport()], {type:'text/plain'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'padel-report.txt';
-  a.click();
-  URL.revokeObjectURL(url);
-});
+// Maak analyse
+function makeAnalysis(){
+  const date = new Date();
+  let txt = `🎾 Wedstrijdrapport ${date.toLocaleDateString()}, ${date.toLocaleTimeString()}\n`;
+  txt += `Locatie: ${document.getElementById('location').value}\n`;
+  const extraLoc = document.getElementById('extraLocation').value;
+  if(extraLoc) txt += `Extra locatie: ${extraLoc}\n`;
+  txt += `Reden wedstrijd: ${document.getElementById('matchReason').value}\n`;
+  const extraInfo = document.getElementById('extraInfo').value;
+  if(extraInfo) txt += `Extra info: ${extraInfo}\n`;
+  txt += `Duur: ${document.getElementById('matchDuration').value} min\n\n`;
 
-document.getElementById('exportPDF').addEventListener('click', ()=>{
+  const ai = aiAnalyse();
+  for(let p=1;p<=numPlayers;p++){
+    txt += `Speler ${document.getElementById(`player${p}`).value}:\n`;
+    txt += `Observaties: ${document.getElementById(`notes${p}`).value}\n`;
+    txt += `📊 Slag-analyse:\n`;
+    ai[`player${p}`].scores.forEach(s=>{ txt+=`${s.slag}: ${s.value}/100\n`});
+    txt += `Sterkste slag: ${ai[`player${p}`].sterkste}\n`;
+    if(ai[`player${p}`].verbeterpunten.length>0) txt += `Verbeterpunten: ${ai[`player${p}`].verbeterpunten.join(', ')}\n`;
+    txt += '\n';
+  }
+
+  // Sets
+  txt += `🏆 Setscores:\n`;
+  for(let s=1;s<=numSets;s++){
+    const tA = document.getElementById(`teamA${s}`).querySelectorAll('.selected').length;
+    const tB = document.getElementById(`teamB${s}`).querySelectorAll('.selected').length;
+    let winner = 'Gelijk';
+    if(tA>tB) winner='Team A';
+    else if(tB>tA) winner='Team B';
+    if(tA+tB>0) txt+=`Set ${s}: ${tA} - ${tB} → Winnaar: ${winner}\n`;
+  }
+
+  document.getElementById('reportOutput').textContent=txt;
+}
+
+// Export functies
+function exportTXT(){ 
+  const text = document.getElementById('reportOutput').textContent;
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='padel-report.txt'; a.click();
+}
+function exportPDF(){
   const { jsPDF } = window.jspdf;
-  if(!jsPDF){ alert('PDF export library niet geladen'); return; }
   const doc = new jsPDF();
-  let y = 10;
-  const report = generateFullReport();
-  doc.setFontSize(12);
-  doc.text('https://sites.google.com/view/padeltrainingdatabase\n\n',10,y);
-  y+=10;
-  report.split('\n').forEach(line=>{
-    doc.text(line,10,y);
-    y+=7;
-    if(y>280){ doc.addPage(); y=10; }
-  });
+  const text = document.getElementById('reportOutput').textContent;
+  const lines = doc.splitTextToSize(text,180);
+  doc.text(lines,10,10);
   doc.save('padel-report.pdf');
-});
+}
+function exportWhatsApp(){
+  const text = document.getElementById('reportOutput').textContent;
+  const url = 'https://web.whatsapp.com/send?text='+encodeURIComponent(text);
+  window.open(url,'_blank');
+}
 
-document.getElementById('exportWhatsApp').addEventListener('click', ()=>{
-  const text = encodeURIComponent(generateFullReport() + "\nhttps://sites.google.com/view/padeltrainingdatabase");
-  window.open(`https://api.whatsapp.com/send?text=${text}`);
-});
+// File upload lezen
+function handleFile(e){
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    document.getElementById('fileContent').textContent = evt.target.result;
+  }
+  reader.readAsText(file);
+}
