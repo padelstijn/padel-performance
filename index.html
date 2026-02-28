@@ -28,7 +28,33 @@ button:hover { background:#1976D2; }
 </head>
 <body>
 <h1>Padel Match Analyzer</h1>
+<h2>Wedstrijd Info</h2>
+<label>Locatie:
+  <select id="location">
+    <option value="TPC Daalmeer - Klaas Bootpad 4-6, 1827 CK Alkmaar">TPC Daalmeer</option>
+    <option value="Una Mas padel - Schermerweg 95, 1821 BG Alkmaar">Una Mas</option>
+    <option value="T.C. Alkmaar Tennis & Padel - Terborchlaan 315, 1816 MH Alkmaar">T.C. Alkmaar</option>
+    <option value="Tree11 - Terborchlaan 311, 1816 MH Alkmaar">Tree11</option>
+    <option value="Golf & Padel Sluispolder - Sluispolderweg 7, 1817 BM Alkmaar">Golf & Padel</option>
+  </select>
+</label>
 
+<label>Reden wedstrijd:
+  <select id="matchReason">
+    <option value="Oefening">Oefening</option>
+    <option value="Training">Training</option>
+    <option value="Competitie">Competitie</option>
+    <option value="Ladderwedstrijd">Ladderwedstrijd</option>
+    <option value="Toernooi">Toernooi</option>
+    <option value="KOTCP">KOTCP</option>
+    <option value="Anders">Anders</option>
+  </select>
+</label>
+
+<label>Duur wedstrijd (minuten):
+  <input type="number" id="matchDuration" value="60" min="10" max="300">
+</label>
+<button id="makeAnalysis">Maak Analyse</button>
 <h2>Spelers & Slag-analyse</h2>
 <div id="players">
   <label>Speler 1 naam: <input type="text" id="player1" value="Speler A"></label>
@@ -36,24 +62,20 @@ button:hover { background:#1976D2; }
   <label>Speler 3 naam: <input type="text" id="player3" value="Speler C"></label>
   <label>Speler 4 naam: <input type="text" id="player4" value="Speler D"></label>
 </div>
-
 <h2>Slag-analyse (0–100)</h2>
 <div id="sliders"></div>
-
 <h2>Setscore (7 bolletjes per team / tot 5 sets)</h2>
 <div id="sets"></div>
-
 <h2>Upload TXT of PDF voor historische data</h2>
 <input type="file" id="fileUpload" accept=".txt,.pdf">
 <pre id="fileContent"></pre>
-
 <h2>Export & Analyse</h2>
 <button id="exportTXT">Export naar TXT</button>
 <button id="exportPDF">Export naar PDF</button>
 <button id="exportWhatsApp">Export naar WhatsApp</button>
-
 <script src="script.js"></script>
 </body>
 </html>
+
 
 
