@@ -10,7 +10,7 @@
 <body>
 <h1>Padel Match Analyzer</h1>
 
-<section id="match-info">
+<!-- Wedstrijd info -->
 <h2>Wedstrijd Info</h2>
 <label>Locatie:
   <select id="location">
@@ -21,9 +21,7 @@
     <option value="Golf & Padel Sluispolder - Sluispolderweg 7, 1817 BM Alkmaar">Golf & Padel</option>
   </select>
 </label>
-<label>Extra locatie:
-  <input type="text" id="extraLocation" placeholder="Nieuwe locatie">
-</label>
+
 <label>Reden wedstrijd:
   <select id="matchReason">
     <option value="Oefening">Oefening</option>
@@ -35,66 +33,44 @@
     <option value="Anders">Anders</option>
   </select>
 </label>
-<label>Extra info:
-  <input type="text" id="extraInfo" placeholder="Toernooi, speelsterkte, baan, tijd etc.">
-</label>
-<label>Duur wedstrijd (minuten):
-  <input type="number" id="matchDuration" value="60" min="10" max="300">
-</label>
+
+<label>Extra info wedstrijd: <input type="text" id="extraInfo" placeholder="Toernooi, speelsterkte, baannaam, tijd etc."></label>
+
+<label>Duur wedstrijd (minuten): <input type="number" id="matchDuration" value="60" min="10" max="300"></label>
+
+<!-- Maak Analyse knop bovenaan -->
 <button id="makeAnalysisTop">Maak Analyse</button>
-</section>
 
-<section id="players">
-<h2>Spelers & Observaties</h2>
-
-<div class="player-section" id="player1-section">
-<label>Speler 1 naam: <input type="text" id="player1" value="Speler A"></label>
-<label>Observaties: <textarea id="notes1"></textarea></label>
-<h3>Slag-analyse (0–100)</h3>
-<div id="sliders1"></div>
+<!-- Spelers -->
+<h2>Spelers & Slag-analyse</h2>
+<div id="players">
+  <label>Speler 1 naam: <input type="text" id="player1" value="Speler A"></label>
+  <label>Speler 2 naam: <input type="text" id="player2" value="Speler B"></label>
+  <label>Speler 3 naam: <input type="text" id="player3" value="Speler C"></label>
+  <label>Speler 4 naam: <input type="text" id="player4" value="Speler D"></label>
 </div>
 
-<div class="player-section" id="player2-section">
-<label>Speler 2 naam: <input type="text" id="player2" value="Speler B"></label>
-<label>Observaties: <textarea id="notes2"></textarea></label>
-<h3>Slag-analyse (0–100)</h3>
-<div id="sliders2"></div>
-</div>
+<!-- Slag-analyse voor 4 spelers -->
+<h2>Slag-analyse (0–100)</h2>
+<div id="sliders"></div>
 
-<div class="player-section" id="player3-section">
-<label>Speler 3 naam: <input type="text" id="player3" value="Speler C"></label>
-<label>Observaties: <textarea id="notes3"></textarea></label>
-<h3>Slag-analyse (0–100)</h3>
-<div id="sliders3"></div>
-</div>
-
-<div class="player-section" id="player4-section">
-<label>Speler 4 naam: <input type="text" id="player4" value="Speler D"></label>
-<label>Observaties: <textarea id="notes4"></textarea></label>
-<h3>Slag-analyse (0–100)</h3>
-<div id="sliders4"></div>
-</div>
-</section>
-
-<section id="sets-section">
+<!-- Setscore -->
 <h2>Setscores (7 bolletjes per team / max 5 sets)</h2>
 <div id="sets"></div>
-</section>
 
-<section id="upload-section">
-<h2>Upload TXT voor historische data</h2>
-<input type="file" id="fileUpload" accept=".txt">
+<!-- Upload TXT of PDF -->
+<h2>Upload TXT of PDF voor historische data</h2>
+<input type="file" id="fileUpload" accept=".txt,.pdf">
 <pre id="fileContent"></pre>
-<button id="makeAnalysisBottom">Maak Analyse</button>
-</section>
 
-<section id="export-section">
+<!-- Maak Analyse knop onder upload -->
+<button id="makeAnalysisBottom">Maak Analyse</button>
+
+<!-- Export -->
 <h2>Export & Analyse</h2>
 <button id="exportTXT">Export naar TXT</button>
 <button id="exportPDF">Export naar PDF</button>
 <button id="exportWhatsApp">Export naar WhatsApp</button>
-<pre id="reportOutput"></pre>
-</section>
 
 <script src="script.js"></script>
 </body>
