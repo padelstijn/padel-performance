@@ -1,21 +1,31 @@
-// script.js
-
 // ========================
 // CONFIG
 // ========================
-
 const slagen = [
   "Forehand","Backhand","Volley","Bandeja","Platte Smash","Topspin Smash",
   "Kicksmash","Vibora","Gancho","Bajada","Lob","Dropshot","Service","Return"
 ];
-
 const maxSets = 5;
 const maxBalls = 7;
 
-// ========================
-// SLIDERS DYNAMISCH GENEREREN
-// ========================
+const tipsGoed = [
+  "Goed gedaan, dit helpt je net positie te bereiken",
+  "Zeer effectief gebruikt",
+  "Mooi geplaatst, blijf zo spelen",
+  "Prima uitvoering, scoorde vaak punten",
+  "Goed tactisch gebruikt tijdens rallies"
+];
+const tipsVerbeter = [
+  "Verbeter deze slag door meer controle te oefenen",
+  "Focus op timing en positionering",
+  "Probeer consistentie in uitvoering te verhogen",
+  "Train deze slag in korte drills",
+  "Let op voetenwerk bij deze slag"
+];
 
+// ========================
+// SLIDERS GENEREREN
+// ========================
 const slidersDiv = document.getElementById('sliders');
 slagen.forEach(slag=>{
   const group = document.createElement('div');
@@ -45,11 +55,9 @@ slagen.forEach(slag=>{
 });
 
 // ========================
-// SETSCORE BOLLETJES + INPUT
+// SETSCORE GENEREREN
 // ========================
-
 const setsDiv = document.getElementById('sets');
-
 for(let s=0;s<maxSets;s++){
   const setContainer = document.createElement('div');
   setContainer.className='set';
@@ -59,19 +67,16 @@ for(let s=0;s<maxSets;s++){
     const row = document.createElement('div');
     row.className='set-row';
     row.innerHTML = `<strong>Team ${team}:</strong> `;
-
     for(let b=1;b<=maxBalls;b++){
       const bol = document.createElement('span');
       bol.className='bolletje';
       bol.textContent=b;
       bol.addEventListener('click', ()=> {
-        // deselecteer eerst
         row.querySelectorAll('.bolletje').forEach(bb=>bb.classList.remove('selected'));
         bol.classList.add('selected');
       });
       row.appendChild(bol);
     }
-
     const inputExtra = document.createElement('input');
     inputExtra.type='number';
     inputExtra.min=0;
@@ -84,17 +89,14 @@ for(let s=0;s<maxSets;s++){
     row.classList.add(`setRow${team}`);
     setContainer.appendChild(row);
   });
-
   setsDiv.appendChild(setContainer);
 }
 
 // ========================
 // FILE UPLOAD TXT / PDF
 // ========================
-
 const fileInput = document.getElementById('fileUpload');
 const fileContent = document.getElementById('fileContent');
-
 fileInput.addEventListener('change', e=>{
   const file = e.target.files[0];
   if(!file) return;
@@ -111,9 +113,7 @@ fileInput.addEventListener('change', e=>{
             page.getTextContent().then(content=>{
               allText += content.items.map(t=>t.str).join(' ')+'\n';
               count++;
-              if(count===pdf.numPages){
-                fileContent.textContent = allText;
-              }
+              if(count===pdf.numPages){ fileContent.textContent = allText; }
             });
           });
         }
@@ -121,15 +121,14 @@ fileInput.addEventListener('change', e=>{
     }
     reader.readAsArrayBuffer(file);
   } else {
-    reader.onload = function() { fileContent.textContent = this.result; }
+    reader.onload = function(){ fileContent.textContent = this.result; }
     reader.readAsText(file);
   }
 });
 
 // ========================
-// ANALYSE FUNCTIES
+// ANALYSE
 // ========================
-
 function analyzeSets(){
   const setContainers = setsDiv.querySelectorAll('div.set');
   let setsPlayed=0, setsWonA=0, setsWonB=0, totalGamesA=0, totalGamesB=0;
@@ -138,11 +137,8 @@ function analyzeSets(){
     const rowA = set.querySelector('.setRowA');
     const rowB = set.querySelector('.setRowB');
 
-    let scoreA = Number(rowA.querySelector('.bolletje.selected')?.textContent || 0);
-    scoreA += Number(rowA.querySelector('.extraScore').value);
-
-    let scoreB = Number(rowB.querySelector('.bolletje.selected')?.textContent || 0);
-    scoreB += Number(rowB.querySelector('.extraScore').value);
+    let scoreA = Number(rowA.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowA.querySelector('.extraScore').value);
+    let scoreB = Number(rowB.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowB.querySelector('.extraScore').value);
 
     if(scoreA!==0 || scoreB!==0) setsPlayed++;
     totalGamesA += scoreA;
@@ -164,29 +160,24 @@ function analyzeSets(){
   return {setsPlayed, setsWonA, setsWonB, totalGamesA, totalGamesB, matchWinner};
 }
 
-function slagBest(){
-  let bestSlag='', maxVal=-1;
+function generateTips(){
+  const tips=[];
   slagen.forEach(s=>{
-    let val = Number(document.getElementById(s).value);
-    if(val>maxVal){ maxVal=val; bestSlag=s; }
+    const val = Number(document.getElementById(s).value);
+    if(val<50) tips.push(`${s}: ${tipsVerbeter[Math.floor(Math.random()*tipsVerbeter.length)]}`);
+    else if(val>55) tips.push(`${s}: ${tipsGoed[Math.floor(Math.random()*tipsGoed.length)]}`);
   });
-  return bestSlag;
-}
-
-function slagWeak(){
-  let weakSlag='', minVal=101;
-  slagen.forEach(s=>{
-    let val = Number(document.getElementById(s).value);
-    if(val<minVal){ minVal=val; weakSlag=s; }
-  });
-  return weakSlag;
+  return tips;
 }
 
 function generateFullReport(){
-  const player1 = document.getElementById('player1').value;
-  const player2 = document.getElementById('player2').value;
-  const player3 = document.getElementById('player3').value;
-  const player4 = document.getElementById('player4').value;
+  const players = [];
+  for(let i=1;i<=4;i++){
+    players.push({
+      name: document.getElementById(`player${i}`).value,
+      notes: document.getElementById(`notes${i}`).value
+    });
+  }
   const location = document.getElementById('location').value;
   const reason = document.getElementById('matchReason').value;
   const duration = document.getElementById('matchDuration').value;
@@ -197,17 +188,19 @@ function generateFullReport(){
   report += `Locatie: ${location}\n`;
   report += `Reden: ${reason}\n`;
   report += `Duur: ${duration} minuten\n\n`;
-  report += `Spelers:\n${player1} & ${player2} tegen ${player3} & ${player4}\n\n`;
 
-  report += `📊 Slag-analyse:\n`;
+  report += `Spelers:\n`;
+  players.forEach(p=> report += `${p.name}\n`);
+  report += '\n';
+
+  report += `📊 Slag-analyse (door eerste speler ingevuld):\n`;
   slagen.forEach(s=>{
     const val = document.getElementById(s).value;
     report += `${s}: ${val}/100\n`;
   });
 
-  // Setscores
-  const setContainers = setsDiv.querySelectorAll('div.set');
   report += `\n🏆 Setscores:\n`;
+  const setContainers = setsDiv.querySelectorAll('div.set');
   setContainers.forEach((set,index)=>{
     const rowA = set.querySelector('.setRowA');
     const rowB = set.querySelector('.setRowB');
@@ -215,22 +208,23 @@ function generateFullReport(){
     let scoreA = Number(rowA.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowA.querySelector('.extraScore').value);
     let scoreB = Number(rowB.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowB.querySelector('.extraScore').value);
 
+    if(scoreA===0 && scoreB===0) return; // niet gespeeld
     let winner = scoreA>scoreB?'Team A':scoreB>scoreA?'Team B':'Gelijk';
     report += `Set ${index+1}: ${scoreA} - ${scoreB} → Winnaar: ${winner}\n`;
   });
 
   report += `\nAantal sets gespeeld: ${result.setsPlayed}\n`;
   report += `Totaal games: ${result.totalGamesA}-${result.totalGamesB}\n`;
-  if(result.setsWonA===result.setsWonB){
-    report += `Gelijkspel in sets.\nWinnaar op basis van totaal aantal games: ${result.matchWinner}\n`;
-  }else{
-    report += `Winnaar match: ${result.matchWinner}\n`;
-  }
+  report += `Winnaar match: ${result.matchWinner}\n`;
 
-  report += `\n🧠 AI Analyse:\n`;
-  report += `Sterkste slag: ${slagBest()}\n`;
-  report += `Verbeterpunt: ${slagWeak()}\n`;
-  report += `Persoonlijke reflectie: Goede communicatie, tactiek en ${reason.toLowerCase()}.\n`;
+  report += `\n🧠 AI Analyse & Tips:\n`;
+  const tips = generateTips();
+  tips.forEach(t=>report += `- ${t}\n`);
+
+  report += `\nPersoonlijke observaties:\n`;
+  players.forEach(p=>{
+    if(p.notes) report += `${p.name}: ${p.notes}\n`;
+  });
 
   return report;
 }
@@ -238,9 +232,10 @@ function generateFullReport(){
 // ========================
 // EVENT LISTENERS
 // ========================
+const reportOutput = document.getElementById('reportOutput');
 
 document.getElementById('makeAnalysis').addEventListener('click', ()=>{
-  fileContent.textContent = generateFullReport();
+  reportOutput.textContent = generateFullReport();
 });
 
 document.getElementById('exportTXT').addEventListener('click', ()=>{
@@ -255,15 +250,14 @@ document.getElementById('exportTXT').addEventListener('click', ()=>{
 
 document.getElementById('exportPDF').addEventListener('click', ()=>{
   const { jsPDF } = window.jspdf;
-  if(!jsPDF){ alert('PDF export library niet geladen.'); return; }
+  if(!jsPDF){ alert('PDF export library niet geladen'); return; }
   const doc = new jsPDF();
-  const report = generateFullReport();
-  const lines = report.split('\n');
   let y = 10;
+  const report = generateFullReport();
   doc.setFontSize(12);
-  doc.text('https://sites.google.com/view/padeltrainingdatabase\n\n', 10, y);
+  doc.text('https://sites.google.com/view/padeltrainingdatabase\n\n',10,y);
   y+=10;
-  lines.forEach(line=>{
+  report.split('\n').forEach(line=>{
     doc.text(line,10,y);
     y+=7;
     if(y>280){ doc.addPage(); y=10; }
@@ -272,7 +266,6 @@ document.getElementById('exportPDF').addEventListener('click', ()=>{
 });
 
 document.getElementById('exportWhatsApp').addEventListener('click', ()=>{
-  const report = generateFullReport();
-  const text = encodeURIComponent(report + "\nhttps://sites.google.com/view/padeltrainingdatabase");
+  const text = encodeURIComponent(generateFullReport() + "\nhttps://sites.google.com/view/padeltrainingdatabase");
   window.open(`https://api.whatsapp.com/send?text=${text}`);
 });
