@@ -58,6 +58,25 @@ for(let setNum=1; setNum<=maxSets; setNum++){
 document.getElementById('fileUpload').addEventListener('change', function(e){
   const file = e.target.files[0];
   if(!file) return;
+
+  if(file.name.endsWith('.txt')){
+    // TXT bestand lezen
+    const reader = new FileReader();
+    reader.onload = function(event){
+      const content = event.target.result;
+      document.getElementById('fileContent').textContent = content;
+      analyzeMatch(content); // automatisch de analyse uitvoeren
+    };
+    reader.readAsText(file);
+  } else if(file.name.endsWith('.pdf')){
+    readPDF(file);
+  } else {
+    alert("Alleen TXT of PDF toegestaan");
+  }
+});
+document.getElementById('fileUpload').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
   if(file.name.endsWith('.txt')){
     const reader = new FileReader();
     reader.onload = e => analyzeMatch(e.target.result);
@@ -172,3 +191,4 @@ document.getElementById('exportWhatsApp').addEventListener('click',()=>{
   const text = encodeURIComponent(`${report}\nhttps://sites.google.com/view/padeltrainingdatabase`);
   window.open(`https://wa.me/?text=${text}`, '_blank');
 });
+
