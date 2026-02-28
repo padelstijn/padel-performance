@@ -13,4 +13,3 @@ button { margin:10px 5px; padding:10px 20px; border:none; background:#2196F3; co
 button:hover { background:#1976D2; }
 #fileContent, pre#reportOutput { white-space: pre-wrap; background:#fff; padding:10px; border-radius:8px; margin-top:10px; box-shadow:0 2px 4px rgba(0,0,0,0.1);}
 .player-section { background:#e8f0fe; padding:10px; margin-bottom:15px; border-radius:8px;}
-
