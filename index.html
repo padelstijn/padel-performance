@@ -21,7 +21,7 @@
     <option value="Golf & Padel Sluispolder - Sluispolderweg 7, 1817 BM Alkmaar">Golf & Padel</option>
   </select>
 </label>
-<label>Andere locatie (optioneel):
+<label>Extra locatie:
   <input type="text" id="extraLocation" placeholder="Nieuwe locatie">
 </label>
 <label>Reden wedstrijd:
@@ -36,7 +36,7 @@
   </select>
 </label>
 <label>Extra info:
-  <input type="text" id="extraInfo" placeholder="Naam toernooi, speelsterkte, baan, tijd etc.">
+  <input type="text" id="extraInfo" placeholder="Toernooi, speelsterkte, baan, tijd etc.">
 </label>
 <label>Duur wedstrijd (minuten):
   <input type="number" id="matchDuration" value="60" min="10" max="300">
@@ -46,6 +46,7 @@
 
 <section id="players">
 <h2>Spelers & Observaties</h2>
+
 <div class="player-section" id="player1-section">
 <label>Speler 1 naam: <input type="text" id="player1" value="Speler A"></label>
 <label>Observaties: <textarea id="notes1"></textarea></label>
@@ -81,8 +82,8 @@
 </section>
 
 <section id="upload-section">
-<h2>Upload TXT of PDF</h2>
-<input type="file" id="fileUpload" accept=".txt,.pdf">
+<h2>Upload TXT voor historische data</h2>
+<input type="file" id="fileUpload" accept=".txt">
 <pre id="fileContent"></pre>
 <button id="makeAnalysisBottom">Maak Analyse</button>
 </section>
