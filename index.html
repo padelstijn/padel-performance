@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Padel Match Analyzer</title>
 <link rel="stylesheet" href="style.css">
-
-<!-- PDF Export Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.107/pdf.min.js"></script>
 </head>
@@ -43,6 +41,9 @@
       <label>Duur wedstrijd (minuten):
         <input type="number" id="matchDuration" value="60" min="10" max="300">
       </label>
+
+      <!-- Eerste Maak Analyse -->
+      <button id="makeAnalysisTop">Maak Analyse</button>
     </section>
 
     <section id="players">
@@ -87,11 +88,13 @@
       <h2>Upload TXT of PDF voor historische data</h2>
       <input type="file" id="fileUpload" accept=".txt,.pdf">
       <pre id="fileContent"></pre>
+
+      <!-- Tweede Maak Analyse -->
+      <button id="makeAnalysisBottom">Maak Analyse</button>
     </section>
 
     <section id="export-section">
       <h2>Export & Analyse</h2>
-      <button id="makeAnalysis">Maak Analyse</button>
       <button id="exportTXT">Export naar TXT</button>
       <button id="exportPDF">Export naar PDF</button>
       <button id="exportWhatsApp">Export naar WhatsApp</button>
