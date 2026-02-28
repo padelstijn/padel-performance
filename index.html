@@ -5,20 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Padel Match Analyzer</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.107/pdf.min.js"></script>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+h1, h2 { text-align:center; }
+.slider-group { margin-bottom: 20px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+label { display:block; margin-bottom:5px; font-weight:bold; }
+input[type=range] { width: 80%; }
+input[type=number] { width: 50px; }
+.set-row { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+.bolletje { width: 25px; height:25px; border-radius:50%; border:1px solid #333; display:inline-block; cursor:pointer; text-align:center; line-height:25px; }
+.bolletje.selected { background: #4caf50; color:#fff; }
+button { margin:10px 5px; padding:10px 20px; border:none; background:#2196F3; color:#fff; border-radius:5px; cursor:pointer; }
+button:hover { background:#1976D2; }
+#fileContent { white-space: pre-wrap; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top:10px; }
+</style>
 </head>
 <body>
 <h1>Padel Match Analyzer</h1>
 
-<!-- Voorbeeld van een slider voor Forehand -->
-<div>
-  <label for="forehand">Forehand:</label>
-  <input type="range" id="forehand" min="0" max="100" value="50">
-  <input type="number" id="forehandValue" min="0" max="100" value="50">
+<h2>Spelers & Slag-analyse</h2>
+<div id="players">
+  <label>Speler 1 naam: <input type="text" id="player1" value="Speler A"></label>
+  <label>Speler 2 naam: <input type="text" id="player2" value="Speler B"></label>
+  <label>Speler 3 naam: <input type="text" id="player3" value="Speler C"></label>
+  <label>Speler 4 naam: <input type="text" id="player4" value="Speler D"></label>
 </div>
 
-<!-- Export buttons -->
+<h2>Slag-analyse (0–100)</h2>
+<div id="sliders"></div>
+
+<h2>Setscore (7 bolletjes per team / tot 5 sets)</h2>
+<div id="sets"></div>
+
+<h2>Upload TXT of PDF voor historische data</h2>
+<input type="file" id="fileUpload" accept=".txt,.pdf">
+<pre id="fileContent"></pre>
+
+<h2>Export & Analyse</h2>
 <button id="exportTXT">Export naar TXT</button>
 <button id="exportPDF">Export naar PDF</button>
+<button id="exportWhatsApp">Export naar WhatsApp</button>
 
 <script src="script.js"></script>
 </body>
