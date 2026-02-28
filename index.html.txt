@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Padel Match Analyzer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Padel Match Analyzer</h1>
+
+<!-- Voorbeeld van een slider voor Forehand -->
+<div>
+  <label for="forehand">Forehand:</label>
+  <input type="range" id="forehand" min="0" max="100" value="50">
+  <input type="number" id="forehandValue" min="0" max="100" value="50">
+</div>
+
+<!-- Export buttons -->
+<button id="exportTXT">Export naar TXT</button>
+<button id="exportPDF">Export naar PDF</button>
+
+<script src="script.js"></script>
+</body>
+</html>
