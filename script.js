@@ -1,181 +1,267 @@
-// ======= Slagen =======
+// script.js
+
+// ========================
+// CONFIG
+// ========================
+
 const slagen = [
-  "Forehand", "Backhand", "Volley", "Bandeja", "Platte Smash", "Topspin Smash", 
-  "Kicksmash", "Vibora", "Gancho", "Bajada", "Lob", "Dropshot", "Service", "Return"
+  "Forehand","Backhand","Volley","Bandeja","Platte Smash","Topspin Smash",
+  "Kicksmash","Vibora","Gancho","Bajada","Lob","Dropshot","Service","Return"
 ];
 
-const slidersDiv = document.getElementById('sliders');
+const maxSets = 5;
+const maxBalls = 7;
 
-slagen.forEach(slag => {
-  const div = document.createElement('div');
-  div.className = 'slider-group';
-  div.innerHTML = `
-    <label for="${slag}">${slag}:</label>
+// ========================
+// SLIDERS DYNAMISCH GENEREREN
+// ========================
+
+const slidersDiv = document.getElementById('sliders');
+slagen.forEach(slag=>{
+  const group = document.createElement('div');
+  group.className='slider-group';
+  group.innerHTML = `
+    <label>${slag}: <span id="${slag}Value">50</span>/100</label>
     <input type="range" id="${slag}" min="0" max="100" value="50">
-    <input type="number" id="${slag}Num" min="0" max="100" value="50">
+    <input type="number" id="${slag}Number" min="0" max="100" value="50">
   `;
-  slidersDiv.appendChild(div);
+  slidersDiv.appendChild(group);
 
   const slider = document.getElementById(slag);
-  const number = document.getElementById(slag+'Num');
-  slider.addEventListener('input', () => { number.value = slider.value; });
-  number.addEventListener('input', () => { slider.value = number.value; });
+  const inputNum = document.getElementById(`${slag}Number`);
+  const display = document.getElementById(`${slag}Value`);
+
+  slider.addEventListener('input', ()=>{
+    display.textContent = slider.value;
+    inputNum.value = slider.value;
+  });
+  inputNum.addEventListener('input', ()=>{
+    let val = Number(inputNum.value);
+    if(val<0) val=0; if(val>100) val=100;
+    inputNum.value = val;
+    slider.value = val;
+    display.textContent = val;
+  });
 });
 
-// ======= Setscore =======
+// ========================
+// SETSCORE BOLLETJES + INPUT
+// ========================
+
 const setsDiv = document.getElementById('sets');
-const maxSets = 5;
-for(let setNum=1; setNum<=maxSets; setNum++){
+
+for(let s=0;s<maxSets;s++){
   const setContainer = document.createElement('div');
-  setContainer.innerHTML = `<h3>Set ${setNum}</h3>`;
-  for(let team of ['A','B']){
+  setContainer.className='set';
+  setContainer.innerHTML = `<h3>Set ${s+1}</h3>`;
+
+  ['A','B'].forEach(team=>{
     const row = document.createElement('div');
-    row.className = 'set-row';
-    row.innerHTML = `<strong>Team ${team}:</strong>`;
-    for(let i=1;i<=7;i++){
-      const b = document.createElement('span');
-      b.className = 'bolletje';
-      b.textContent = i;
-      b.addEventListener('click',()=>{ 
-        const siblings = b.parentNode.querySelectorAll('.bolletje');
-        siblings.forEach(s=>s.classList.remove('selected'));
-        b.classList.add('selected');
+    row.className='set-row';
+    row.innerHTML = `<strong>Team ${team}:</strong> `;
+
+    for(let b=1;b<=maxBalls;b++){
+      const bol = document.createElement('span');
+      bol.className='bolletje';
+      bol.textContent=b;
+      bol.addEventListener('click', ()=> {
+        // deselecteer eerst
+        row.querySelectorAll('.bolletje').forEach(bb=>bb.classList.remove('selected'));
+        bol.classList.add('selected');
       });
-      row.appendChild(b);
+      row.appendChild(bol);
     }
-    // Extra input voor >7
-    const input = document.createElement('input');
-    input.type='number';
-    input.min=0; input.value=0;
-    input.placeholder='Score >7';
-    row.appendChild(input);
+
+    const inputExtra = document.createElement('input');
+    inputExtra.type='number';
+    inputExtra.min=0;
+    inputExtra.value=0;
+    inputExtra.className='extraScore';
+    inputExtra.style.width='50px';
+    row.appendChild(document.createTextNode(' + '));
+    row.appendChild(inputExtra);
+
+    row.classList.add(`setRow${team}`);
     setContainer.appendChild(row);
-  }
+  });
+
   setsDiv.appendChild(setContainer);
 }
 
-// ======= Upload TXT/PDF =======
-document.getElementById('fileUpload').addEventListener('change', function(e){
+// ========================
+// FILE UPLOAD TXT / PDF
+// ========================
+
+const fileInput = document.getElementById('fileUpload');
+const fileContent = document.getElementById('fileContent');
+
+fileInput.addEventListener('change', e=>{
   const file = e.target.files[0];
   if(!file) return;
 
-  if(file.name.endsWith('.txt')){
-    // TXT bestand lezen
-    const reader = new FileReader();
-    reader.onload = function(event){
-      const content = event.target.result;
-      document.getElementById('fileContent').textContent = content;
-      analyzeMatch(content); // automatisch de analyse uitvoeren
-    };
-    reader.readAsText(file);
-  } else if(file.name.endsWith('.pdf')){
-    readPDF(file);
-  } else {
-    alert("Alleen TXT of PDF toegestaan");
-  }
-});
-document.getElementById('fileUpload').addEventListener('change', function(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  if(file.name.endsWith('.txt')){
-    const reader = new FileReader();
-    reader.onload = e => analyzeMatch(e.target.result);
-    reader.readAsText(file);
-  } else if(file.name.endsWith('.pdf')){
-    const reader = new FileReader();
-    reader.onload = function(){
-      const typedArray = new Uint8Array(reader.result);
-      pdfjsLib.getDocument(typedArray).promise.then(pdf=>{
-        let allText = '';
-        let pagePromises = [];
+  const reader = new FileReader();
+  if(file.type==='application/pdf'){
+    reader.onload = function() {
+      const typedarray = new Uint8Array(this.result);
+      pdfjsLib.getDocument(typedarray).promise.then(pdf=>{
+        let allText='';
+        let count=0;
         for(let i=1;i<=pdf.numPages;i++){
-          pagePromises.push(
-            pdf.getPage(i).then(page=>page.getTextContent().then(tc=>{
-              allText += tc.items.map(it=>it.str).join(' ') + '\n';
-            }))
-          );
+          pdf.getPage(i).then(page=>{
+            page.getTextContent().then(content=>{
+              allText += content.items.map(t=>t.str).join(' ')+'\n';
+              count++;
+              if(count===pdf.numPages){
+                fileContent.textContent = allText;
+              }
+            });
+          });
         }
-        Promise.all(pagePromises).then(()=> analyzeMatch(allText));
       });
-    };
+    }
     reader.readAsArrayBuffer(file);
+  } else {
+    reader.onload = function() { fileContent.textContent = this.result; }
+    reader.readAsText(file);
   }
 });
 
-// ======= Analyse functie =======
-function analyzeMatch(txt){
+// ========================
+// ANALYSE FUNCTIES
+// ========================
+
+function analyzeSets(){
+  const setContainers = setsDiv.querySelectorAll('div.set');
+  let setsPlayed=0, setsWonA=0, setsWonB=0, totalGamesA=0, totalGamesB=0;
+
+  setContainers.forEach(set=>{
+    const rowA = set.querySelector('.setRowA');
+    const rowB = set.querySelector('.setRowB');
+
+    let scoreA = Number(rowA.querySelector('.bolletje.selected')?.textContent || 0);
+    scoreA += Number(rowA.querySelector('.extraScore').value);
+
+    let scoreB = Number(rowB.querySelector('.bolletje.selected')?.textContent || 0);
+    scoreB += Number(rowB.querySelector('.extraScore').value);
+
+    if(scoreA!==0 || scoreB!==0) setsPlayed++;
+    totalGamesA += scoreA;
+    totalGamesB += scoreB;
+
+    if(scoreA>scoreB) setsWonA++;
+    else if(scoreB>scoreA) setsWonB++;
+  });
+
+  let matchWinner='';
+  if(setsWonA>setsWonB) matchWinner='Team A';
+  else if(setsWonB>setsWonA) matchWinner='Team B';
+  else {
+    if(totalGamesA>totalGamesB) matchWinner='Team A';
+    else if(totalGamesB>totalGamesA) matchWinner='Team B';
+    else matchWinner='Gelijk';
+  }
+
+  return {setsPlayed, setsWonA, setsWonB, totalGamesA, totalGamesB, matchWinner};
+}
+
+function slagBest(){
+  let bestSlag='', maxVal=-1;
+  slagen.forEach(s=>{
+    let val = Number(document.getElementById(s).value);
+    if(val>maxVal){ maxVal=val; bestSlag=s; }
+  });
+  return bestSlag;
+}
+
+function slagWeak(){
+  let weakSlag='', minVal=101;
+  slagen.forEach(s=>{
+    let val = Number(document.getElementById(s).value);
+    if(val<minVal){ minVal=val; weakSlag=s; }
+  });
+  return weakSlag;
+}
+
+function generateFullReport(){
   const player1 = document.getElementById('player1').value;
   const player2 = document.getElementById('player2').value;
   const player3 = document.getElementById('player3').value;
   const player4 = document.getElementById('player4').value;
+  const location = document.getElementById('location').value;
+  const reason = document.getElementById('matchReason').value;
+  const duration = document.getElementById('matchDuration').value;
+
+  const result = analyzeSets();
 
   let report = `🎾 Wedstrijdrapport ${new Date().toLocaleString()}\n`;
+  report += `Locatie: ${location}\n`;
+  report += `Reden: ${reason}\n`;
+  report += `Duur: ${duration} minuten\n\n`;
   report += `Spelers:\n${player1} & ${player2} tegen ${player3} & ${player4}\n\n`;
 
   report += `📊 Slag-analyse:\n`;
-  slagen.forEach(slag=>{
-    const val = document.getElementById(slag).value;
-    report += `${slag}: ${val}/100\n`;
+  slagen.forEach(s=>{
+    const val = document.getElementById(s).value;
+    report += `${s}: ${val}/100\n`;
   });
 
-  // Set winner detectie
+  // Setscores
+  const setContainers = setsDiv.querySelectorAll('div.set');
   report += `\n🏆 Setscores:\n`;
-  const setContainers = setsDiv.querySelectorAll('div h3');
-  setContainers.forEach((h3,index)=>{
-    const setRows = h3.parentNode.querySelectorAll('.set-row');
-    let scoreA = Number(setRows[0].querySelector('.bolletje.selected')?.textContent || 0);
-    scoreA += Number(setRows[0].querySelector('input[type=number]').value);
-    let scoreB = Number(setRows[1].querySelector('.bolletje.selected')?.textContent || 0);
-    scoreB += Number(setRows[1].querySelector('input[type=number]').value);
-    let winner = scoreA>scoreB ? 'Team A' : scoreB>scoreA ? 'Team B' : 'Gelijk';
+  setContainers.forEach((set,index)=>{
+    const rowA = set.querySelector('.setRowA');
+    const rowB = set.querySelector('.setRowB');
+
+    let scoreA = Number(rowA.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowA.querySelector('.extraScore').value);
+    let scoreB = Number(rowB.querySelector('.bolletje.selected')?.textContent || 0) + Number(rowB.querySelector('.extraScore').value);
+
+    let winner = scoreA>scoreB?'Team A':scoreB>scoreA?'Team B':'Gelijk';
     report += `Set ${index+1}: ${scoreA} - ${scoreB} → Winnaar: ${winner}\n`;
   });
+
+  report += `\nAantal sets gespeeld: ${result.setsPlayed}\n`;
+  report += `Totaal games: ${result.totalGamesA}-${result.totalGamesB}\n`;
+  if(result.setsWonA===result.setsWonB){
+    report += `Gelijkspel in sets.\nWinnaar op basis van totaal aantal games: ${result.matchWinner}\n`;
+  }else{
+    report += `Winnaar match: ${result.matchWinner}\n`;
+  }
 
   report += `\n🧠 AI Analyse:\n`;
   report += `Sterkste slag: ${slagBest()}\n`;
   report += `Verbeterpunt: ${slagWeak()}\n`;
-  report += `Persoonlijke reflectie: Goede communicatie en tactiek.\n`;
+  report += `Persoonlijke reflectie: Goede communicatie, tactiek en ${reason.toLowerCase()}.\n`;
 
-  document.getElementById('fileContent').textContent = report;
   return report;
 }
 
-// ======= Slag sterkte/zwakte =======
-function slagBest(){
-  let best = slagen[0]; let max = 0;
-  slagen.forEach(s=>{ const val = Number(document.getElementById(s).value); if(val>max){max=val;best=s;} });
-  return best;
-}
-function slagWeak(){
-  let weak = slagen[0]; let min = 100;
-  slagen.forEach(s=>{ const val = Number(document.getElementById(s).value); if(val<min){min=val;weak=s;} });
-  return weak;
-}
+// ========================
+// EVENT LISTENERS
+// ========================
 
-// ======= Export TXT =======
-document.getElementById('exportTXT').addEventListener('click',()=>{
-  const report = analyzeMatch('');
-  const content = `https://sites.google.com/view/padeltrainingdatabase/data\n\n${report}`;
-  const blob = new Blob([content],{type:'text/plain'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'padel-report.txt';
-  a.click();
+document.getElementById('makeAnalysis').addEventListener('click', ()=>{
+  fileContent.textContent = generateFullReport();
 });
 
-// ======= Export PDF =======
-document.getElementById('exportPDF').addEventListener('click',()=>{
-  const report = analyzeMatch('');
-  const { jsPDF } = window.jspdf || {};
-  if(!jsPDF){
-    alert('PDF export library niet geladen.');
-    return;
-  }
+document.getElementById('exportTXT').addEventListener('click', ()=>{
+  const blob = new Blob([generateFullReport()], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'padel-report.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('exportPDF').addEventListener('click', ()=>{
+  const { jsPDF } = window.jspdf;
+  if(!jsPDF){ alert('PDF export library niet geladen.'); return; }
   const doc = new jsPDF();
-  let lines = report.split('\n');
+  const report = generateFullReport();
+  const lines = report.split('\n');
   let y = 10;
   doc.setFontSize(12);
-  doc.text('https://sites.google.com/view/padeltrainingdatabase\n\n',10,y);
+  doc.text('https://sites.google.com/view/padeltrainingdatabase\n\n', 10, y);
   y+=10;
   lines.forEach(line=>{
     doc.text(line,10,y);
@@ -185,10 +271,8 @@ document.getElementById('exportPDF').addEventListener('click',()=>{
   doc.save('padel-report.pdf');
 });
 
-// ======= Export WhatsApp =======
-document.getElementById('exportWhatsApp').addEventListener('click',()=>{
-  const report = analyzeMatch('');
-  const text = encodeURIComponent(`${report}\nhttps://sites.google.com/view/padeltrainingdatabase`);
-  window.open(`https://wa.me/?text=${text}`, '_blank');
+document.getElementById('exportWhatsApp').addEventListener('click', ()=>{
+  const report = generateFullReport();
+  const text = encodeURIComponent(report + "\nhttps://sites.google.com/view/padeltrainingdatabase");
+  window.open(`https://api.whatsapp.com/send?text=${text}`);
 });
-
