@@ -26,17 +26,21 @@
         </select>
       </label>
 
-      <label>Reden wedstrijd:
-        <select id="matchReason">
-          <option value="Oefening">Oefening</option>
-          <option value="Training">Training</option>
-          <option value="Competitie">Competitie</option>
-          <option value="Ladderwedstrijd">Ladderwedstrijd</option>
-          <option value="Toernooi">Toernooi</option>
-          <option value="KOTCP">KOTCP</option>
-          <option value="Anders">Anders</option>
-        </select>
-      </label>
+    <label>Reden wedstrijd:
+  <select id="matchReason">
+    <option value="Oefening">Oefening</option>
+    <option value="Training">Training</option>
+    <option value="Competitie">Competitie</option>
+    <option value="Ladderwedstrijd">Ladderwedstrijd</option>
+    <option value="Toernooi">Toernooi</option>
+    <option value="KOTCP">KOTCP</option>
+    <option value="Anders">Anders</option>
+  </select>
+</label>
+
+<label>Extra info / Toernooi gegevens:
+  <input type="text" id="extraInfo" placeholder="Naam toernooi, speelsterkte, baan, geplande tijd, werkelijke start, etc.">
+</label>
 
       <label>Duur wedstrijd (minuten):
         <input type="number" id="matchDuration" value="60" min="10" max="300">
@@ -109,3 +113,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
