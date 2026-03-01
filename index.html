@@ -3,15 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Padel Performance Analyzer</title>
+<title>Padel Performance Club Demo</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-<h1>🎾 Padel Performance Analyzer</h1>
+<h1>🎾 Padel Performance Club Demo</h1>
 
-<!-- Wedstrijd Info -->
+<!-- Analyse bovenaan -->
+<div id="reportSummaryTop" class="section"></div>
+<button id="makeAnalysisTop">Maak Analyse</button>
+
 <div class="section">
 <h2>Wedstrijd Info</h2>
 <label>Locatie:
@@ -22,10 +25,7 @@
     <option value="Tree11 - Terborchlaan 311, 1816 MH Alkmaar">Tree11</option>
     <option value="Golf & Padel Sluispolder - Sluispolderweg 7, 1817 BM Alkmaar">Golf & Padel</option>
   </select>
-</label>
-
-<label>Extra locatie / baan:
-  <input type="text" id="extraLocation" placeholder="Bijv. baan 1">
+  <input type="text" id="extraLocation" placeholder="Extra locatie">
 </label>
 
 <label>Reden wedstrijd:
@@ -38,52 +38,54 @@
     <option value="KOTCP">KOTCP</option>
     <option value="Anders">Anders</option>
   </select>
-</label>
-
-<label>Extra info wedstrijd:
-  <input type="text" id="extraInfo" placeholder="Bijv. speelsterkte, tijd, spelers">
+  <input type="text" id="extraInfo" placeholder="Extra info / toernooi / tijd / spelers info">
 </label>
 
 <label>Duur wedstrijd (minuten):
   <input type="number" id="matchDuration" value="60" min="10" max="300">
 </label>
-
-<button class="analyse-btn" id="makeAnalysisTop">Maak Analyse</button>
 </div>
 
-<!-- Spelers en Slag-analyse -->
-<div class="section">
-<h2>Spelers & Slag-analyse</h2>
-<div id="players"></div>
+<div class="section" id="playersSection">
+<h2>Spelers</h2>
+<label>Speler 1 naam: <input type="text" id="player1" value="Speler A"></label>
+<label>Speler 2 naam: <input type="text" id="player2" value="Speler B"></label>
+<label>Speler 3 naam: <input type="text" id="player3" value="Speler C"></label>
+<label>Speler 4 naam: <input type="text" id="player4" value="Speler D"></label>
 </div>
 
-<!-- Setscore -->
-<div class="section">
-<h2>Setscore (7 bolletjes per team / max 5 sets)</h2>
-<div id="sets"></div>
-</div>
+<!-- Slag-analyse per speler -->
+<div id="slidersSection" class="section"></div>
+
+<!-- Setscores -->
+<div id="setsSection" class="section"></div>
 
 <!-- Upload TXT -->
 <div class="section">
-<h2>Upload TXT voor historische data</h2>
-<input type="file" id="fileUpload" accept=".txt">
+<h2>Upload TXT of PDF voor historische data</h2>
+<input type="file" id="fileUpload" accept=".txt,.pdf">
 <pre id="fileContent"></pre>
-<button class="analyse-btn" id="makeAnalysisBottom">Maak Analyse</button>
 </div>
 
-<!-- Export -->
+<!-- Analyse onderaan -->
+<button id="makeAnalysisBottom">Maak Analyse</button>
+<div id="reportSummaryBottom" class="section"></div>
+
+<!-- Export knoppen -->
 <div class="section">
-<h2>Export & Analyse</h2>
 <button id="exportTXT">Export naar TXT</button>
 <button id="exportPDF">Export naar PDF</button>
 <button id="exportWhatsApp">Export naar WhatsApp</button>
 </div>
 
-<!-- Resultaten -->
-<div class="section">
-<h2>📊 Resultaten</h2>
-<div id="analysisResults"></div>
-<div id="radarsContainer" class="radars-grid"></div>
+<!-- Resultaat / Leaderboard -->
+<div id="resultSection" class="section">
+<h2>📊 Resultaat</h2>
+<div id="scoreDisplay"></div>
+<div id="radars4Players" class="radars4"></div>
+
+<h2>🏆 Club Leaderboard</h2>
+<div id="leaderboard"></div>
 </div>
 
 <script src="script.js"></script>
