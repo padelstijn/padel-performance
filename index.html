@@ -3,82 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Padel Performance Analyzer</title>
+<title>Padel Performance Club</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; max-width: 1200px; margin:auto;}
+body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
 h1, h2 { text-align:center; }
-.section { background:#fff; padding:15px; margin-bottom:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);}
-label { display:block; margin-top:10px; font-weight:bold;}
-input[type=text], input[type=number], select, textarea { width:100%; padding:5px; margin-top:3px;}
-button { padding:10px 15px; border:none; border-radius:5px; cursor:pointer; background:#2196F3; color:#fff; margin:5px;}
-button:hover { background:#1976D2; }
-.set-row { display:flex; gap:10px; margin-bottom:5px; }
-.bolletje { width:25px; height:25px; border-radius:50%; border:1px solid #333; cursor:pointer; text-align:center; line-height:25px; }
-.bolletje.selected { background:#4caf50; color:#fff; }
-#fileContent { white-space:pre-wrap; background:#fff; padding:10px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-top:10px;}
-.radar-container { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; }
-.radar-chart { width:300px; height:300px; }
-.notes { font-style: italic; color:#555; margin-bottom:10px; }
+.section { background: #fff; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+input, select, textarea { padding:5px; margin-bottom:5px; width:100%;}
+label { display:block; margin:5px 0;}
+button { margin:5px; padding:10px 15px; border:none; background:#2196F3; color:#fff; border-radius:5px; cursor:pointer;}
+button:hover { background:#1976D2;}
+.slider-group { margin-bottom:15px; }
+input[type=range] { width:70%; }
+input[type=number] { width:50px; }
+.set-row { display:flex; gap:10px; align-items:center; margin-bottom:5px;}
+.bolletje { width:25px; height:25px; border-radius:50%; border:1px solid #333; display:inline-block; cursor:pointer; text-align:center; line-height:25px; }
+.bolletje.selected { background: #4caf50; color:#fff; }
+#fileContent { white-space: pre-wrap; background:#fff; padding:10px; border-radius:8px; margin-top:10px; box-shadow:0 2px 4px rgba(0,0,0,0.1);}
+.radar-container { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin-top:10px;}
+.radar-single { width: 250px; }
 </style>
 </head>
 <body>
-<h1>🎾 Padel Performance Analyzer</h1>
 
+<h1>🎾 Padel Performance Club</h1>
+
+<!-- Wedstrijd info -->
 <div class="section">
 <h2>Wedstrijd Info</h2>
 <label>Locatie:
 <select id="location">
-  <option value="TPC Daalmeer - Klaas Bootpad 4-6, 1827 CK Alkmaar">TPC Daalmeer</option>
-  <option value="Una Mas padel - Schermerweg 95, 1821 BG Alkmaar">Una Mas</option>
-  <option value="T.C. Alkmaar Tennis & Padel - Terborchlaan 315, 1816 MH Alkmaar">T.C. Alkmaar</option>
-  <option value="Tree11 - Terborchlaan 311, 1816 MH Alkmaar">Tree11</option>
-  <option value="Golf & Padel Sluispolder - Sluispolderweg 7, 1817 BM Alkmaar">Golf & Padel</option>
+<option value="TPC Daalmeer - Klaas Bootpad 4-6, 1827 CK Alkmaar">TPC Daalmeer</option>
+<option value="Una Mas padel - Schermerweg 95, 1821 BG Alkmaar">Una Mas</option>
+<option value="T.C. Alkmaar Tennis & Padel - Terborchlaan 315, 1816 MH Alkmaar">T.C. Alkmaar</option>
+<option value="Tree11 - Terborchlaan 311, 1816 MH Alkmaar">Tree11</option>
+<option value="Golf & Padel Sluispolder - Sluispolderweg 7, 1817 BM Alkmaar">Golf & Padel</option>
 </select>
-<input type="text" id="locationExtra" placeholder="Extra locatie / baannummer"></label>
-
+</label>
+<label>Extra locatie / baan:
+<input type="text" id="extraLocation" placeholder="Baan / extra info">
+</label>
 <label>Reden wedstrijd:
 <select id="matchReason">
-  <option value="Oefening">Oefening</option>
-  <option value="Training">Training</option>
-  <option value="Competitie">Competitie</option>
-  <option value="Ladderwedstrijd">Ladderwedstrijd</option>
-  <option value="Toernooi">Toernooi</option>
-  <option value="KOTCP">KOTCP</option>
-  <option value="Anders">Anders</option>
+<option value="Oefening">Oefening</option>
+<option value="Training">Training</option>
+<option value="Competitie">Competitie</option>
+<option value="Ladderwedstrijd">Ladderwedstrijd</option>
+<option value="Toernooi">Toernooi</option>
+<option value="KOTCP">KOTCP</option>
+<option value="Anders">Anders</option>
 </select>
-<input type="text" id="reasonExtra" placeholder="Extra info / toernooi / spelers info / tijd"></label>
+</label>
+<label>Extra info wedstrijd:
+<input type="text" id="extraInfo" placeholder="Naam toernooi / speler info / tijd">
+</label>
+<label>Duur wedstrijd (minuten):
+<input type="number" id="matchDuration" value="60" min="10" max="300">
+</label>
 
-<label>Duur wedstrijd (minuten): <input type="number" id="matchDuration" value="60" min="10" max="300"></label>
-
+<!-- Maak Analyse knop bovenaan -->
 <button id="makeAnalysisTop">Maak Analyse</button>
 </div>
 
+<!-- Spelers -->
 <div class="section">
-<h2>Spelers & Slag-analyse</h2>
-<div id="players">
-  <label>Speler 1 naam: <input type="text" id="player1" value="Speler A"></label>
-  <label>Speler 2 naam: <input type="text" id="player2" value="Speler B"></label>
-  <label>Speler 3 naam: <input type="text" id="player3" value="Speler C"></label>
-  <label>Speler 4 naam: <input type="text" id="player4" value="Speler D"></label>
-</div>
-<div id="sliders"></div>
+<h2>Spelers</h2>
+<label>Speler A: <input type="text" id="player1" value="Speler A"></label>
+<label>Speler B: <input type="text" id="player2" value="Speler B"></label>
+<label>Speler C: <input type="text" id="player3" value="Speler C"></label>
+<label>Speler D: <input type="text" id="player4" value="Speler D"></label>
 </div>
 
+<!-- Slag-analyse per speler -->
+<div class="section" id="slidersContainer"></div>
+
+<!-- Setscore -->
 <div class="section">
-<h2>Setscores (7 bolletjes per team / max 5 sets)</h2>
-<div id="sets"></div>
+<h2>Setscore (7 bolletjes per team / max 5 sets)</h2>
+<div id="setsContainer"></div>
 </div>
 
+<!-- Upload TXT/PDF -->
 <div class="section">
 <h2>Upload TXT of PDF voor historische data</h2>
 <input type="file" id="fileUpload" accept=".txt,.pdf">
 <pre id="fileContent"></pre>
-<button id="makeAnalysisBottom">Maak Analyse</button>
 </div>
 
+<!-- Maak Analyse knop boven Export -->
+<button id="makeAnalysisBottom">Maak Analyse</button>
+
+<!-- Export -->
 <div class="section">
 <h2>Export & Analyse</h2>
 <button id="exportTXT">Export naar TXT</button>
@@ -86,10 +103,11 @@ button:hover { background:#1976D2; }
 <button id="exportWhatsApp">Export naar WhatsApp</button>
 </div>
 
+<!-- Resultaat -->
 <div class="section">
 <h2>📊 Resultaat</h2>
-<div id="resultContainer"></div>
-<div class="radar-container" id="radarAll"></div>
+<div id="results"></div>
+<div class="radar-container" id="radarsBottom"></div>
 </div>
 
 <script src="script.js"></script>
