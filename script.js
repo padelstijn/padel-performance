@@ -1,177 +1,248 @@
+// script.js
+
 const players = ["player1","player2","player3","player4"];
-const slagen = ["Forehand","Backhand","Volley","Bandeja","Platte Smash","Topspin Smash","Kicksmash","Vibora","Gancho","Bajada","Lob","Dropshot","Service","Return"];
-const maxSets = 5;
-const maxBolletjes = 7;
-let playerData = {};
-let radarCharts = [];
+const playerNames = ["Speler A","Speler B","Speler C","Speler D"];
+const strokes = ["Forehand","Backhand","Volley","Bandeja","Platte Smash","Topspin Smash","Kicksmash","Vibora","Gancho","Bajada","Lob","Dropshot","Service","Return"];
 
-// Initialize sliders and notes
-function initSliders() {
-    const container = document.getElementById("sliders");
-    container.innerHTML = "";
-    players.forEach(pid=>{
-        playerData[pid] = {};
-        const div = document.createElement("div");
-        div.classList.add("section");
-        div.innerHTML = `<h3>Slag-analyse voor ${document.getElementById(pid).value}</h3>`;
-        slagen.forEach(s=>{
-            const id = `${pid}_${s.replace(/\s+/g,"")}`;
-            div.innerHTML += `<label>${s} <input type="range" min="0" max="100" value="0" id="${id}"><input type="text" placeholder="Persoonlijke notitie" id="${id}_note"></label>`;
-        });
-        container.appendChild(div);
+let matchData = {
+    sets: [],
+    strokeData: {},
+    reflections: {},
+    location:"",
+    extraLocation:"",
+    reason:"",
+    extraInfo:"",
+    duration:60,
+    date:new Date()
+};
+
+// Init Sliders & Notities
+const slidersContainer = document.getElementById("slidersContainer");
+players.forEach((pid,pi)=>{
+    const div = document.createElement("div");
+    div.classList.add("section");
+    div.innerHTML = `<h2>Slag-analyse: ${playerNames[pi]}</h2>`;
+    strokes.forEach((stroke)=>{
+        const sg = document.createElement("div");
+        sg.classList.add("slider-group");
+        sg.innerHTML = `
+            <label>${stroke}: <span id="${pid}_${stroke}_val">50</span>/100</label>
+            <input type="range" min="0" max="100" value="50" id="${pid}_${stroke}">
+            <input type="text" placeholder="Persoonlijke notitie" id="${pid}_${stroke}_note">
+        `;
+        div.appendChild(sg);
+
+        // Update range value display
+        const range = sg.querySelector("input[type=range]");
+        const val = sg.querySelector("span");
+        range.addEventListener("input",()=>val.textContent=range.value);
     });
+    // Persoonlijke reflectie
+    const refl = document.createElement("textarea");
+    refl.placeholder="Persoonlijke observaties / reflectie";
+    refl.id = `${pid}_reflection`;
+    refl.rows=2;
+    div.appendChild(refl);
+
+    slidersContainer.appendChild(div);
+});
+
+// Init sets
+const setsContainer = document.getElementById("setsContainer");
+for(let s=0;s<5;s++){
+    const setRow = document.createElement("div");
+    setRow.classList.add("set-row");
+    setRow.innerHTML = `
+        <label>Set ${s+1} Team A:</label>
+        <div id="set${s}_A">${[...Array(7)].map((_,i)=>`<div class="bolletje" data-set="${s}" data-team="A">${i+1}</div>`).join('')}</div>
+        <input type="number" id="set${s}_A_extra" placeholder="+">
+        <label>Team B:</label>
+        <div id="set${s}_B">${[...Array(7)].map((_,i)=>`<div class="bolletje" data-set="${s}" data-team="B">${i+1}</div>`).join('')}</div>
+        <input type="number" id="set${s}_B_extra" placeholder="+">
+    `;
+    setsContainer.appendChild(setRow);
 }
 
-// Initialize sets
-function initSets() {
-    const container = document.getElementById("sets");
-    container.innerHTML="";
-    for(let i=1;i<=maxSets;i++){
-        const row = document.createElement("div");
-        row.classList.add("set-row");
-        row.innerHTML=`<strong>Set ${i}:</strong> `;
-        ["A","B"].forEach(team=>{
-            for(let j=1;j<=maxBolletjes;j++){
-                const span = document.createElement("span");
-                span.classList.add("bolletje");
-                span.dataset.team = team;
-                span.dataset.set = i;
-                span.addEventListener("click",()=>{span.classList.toggle("selected");});
-                row.appendChild(span);
-            }
-            // Extra input voor >7 games
-            const input = document.createElement("input");
-            input.type="number"; input.min="0"; input.value="0"; input.placeholder=`Team ${team} extra`; 
-            input.id=`set${i}_team${team}_extra`; row.appendChild(input);
-        });
-        container.appendChild(row);
+// Bolletje click
+setsContainer.addEventListener("click",(e)=>{
+    if(e.target.classList.contains("bolletje")){
+        e.target.classList.toggle("selected");
     }
-}
+});
 
-// Read TXT upload
-document.getElementById("fileUpload").addEventListener("change",function(e){
+// File upload
+document.getElementById("fileUpload").addEventListener("change", handleFileUpload);
+function handleFileUpload(e){
     const file = e.target.files[0];
     if(!file) return;
     const reader = new FileReader();
-    reader.onload = function(evt){
-        document.getElementById("fileContent").textContent=evt.target.result;
+    reader.onload = (ev)=>{
+        const content = ev.target.result;
+        document.getElementById("fileContent").textContent = content;
+        // TODO: integratie in matchData / vergelijking met huidige scores
+        alert("Historische data geladen, verschillen in scores zullen later gemarkeerd worden.");
     };
     if(file.name.endsWith(".txt")) reader.readAsText(file);
-    else alert("Alleen TXT files worden nu ondersteund.");
-});
+    else if(file.name.endsWith(".pdf")) reader.readAsText(file); // voor demo
+}
 
-// Generate Analysis
-function generateAnalysis() {
-    const reportContainer = document.getElementById("resultContainer");
-    reportContainer.innerHTML="";
-    const radarAll = document.getElementById("radarAll");
-    radarAll.innerHTML="";
-    radarCharts.forEach(c=>c.destroy());
-    radarCharts=[];
-    let summaryTXT = `🎾 Wedstrijdrapport ${new Date().toLocaleString()}\n`;
-    summaryTXT += `Link: https://padelstijn.github.io/padel-performance/\n\n`;
+// Maak Analyse knoppen
+document.getElementById("makeAnalysisTop").addEventListener("click", generateAnalysis);
+document.getElementById("makeAnalysisBottom").addEventListener("click", generateAnalysis);
 
-    players.forEach(pid=>{
-        const playerName = document.getElementById(pid).value;
-        let scores=[], notes=[];
-        slagen.forEach(s=>{
-            const sid = `${pid}_${s.replace(/\s+/g,"")}`;
-            const val = document.getElementById(sid).valueAsNumber || 0;
-            const note = document.getElementById(`${sid}_note`).value;
-            scores.push(val);
-            notes.push(note);
+// Exports
+document.getElementById("exportTXT").addEventListener("click", exportTXT);
+document.getElementById("exportPDF").addEventListener("click", exportPDF);
+document.getElementById("exportWhatsApp").addEventListener("click", exportWhatsApp);
+
+function generateAnalysis(){
+    // Verzamel match info
+    matchData.location=document.getElementById("location").value;
+    matchData.extraLocation=document.getElementById("extraLocation").value;
+    matchData.reason=document.getElementById("matchReason").value;
+    matchData.extraInfo=document.getElementById("extraInfo").value;
+    matchData.duration=parseInt(document.getElementById("matchDuration").value);
+    matchData.date=new Date();
+
+    // Verzamel stroke data en reflecties
+    players.forEach((pid)=>{
+        matchData.strokeData[pid]={};
+        matchData.reflections[pid]=document.getElementById(`${pid}_reflection`).value;
+        strokes.forEach((stroke)=>{
+            const val = parseInt(document.getElementById(`${pid}_${stroke}`).value)||0;
+            const note = document.getElementById(`${pid}_${stroke}_note`).value;
+            matchData.strokeData[pid][stroke]={value:val, note:note};
         });
-        playerData[pid].scores = scores;
-        playerData[pid].notes = notes;
+    });
 
-        // Analyse tekst
-        const strongest = slagen[scores.indexOf(Math.max(...scores))];
-        const weakest = slagen[scores.indexOf(Math.min(...scores))];
-        const veelGebruikt = slagen.filter((_,i)=>scores[i]>50);
-        const verbeterpunten = slagen.filter((_,i)=>scores[i]<50);
-        const nietGespeeld = slagen.filter((_,i)=>scores[i]===0);
-        const bijnaNiet = slagen.filter((_,i)=>scores[i]<20 && scores[i]!==0);
+    // Verzamel sets
+    matchData.sets=[];
+    for(let s=0;s<5;s++){
+        const teamA = [...document.querySelectorAll(`#set${s}_A .bolletje.selected`)].length + parseInt(document.getElementById(`set${s}_A_extra`).value||0);
+        const teamB = [...document.querySelectorAll(`#set${s}_B .bolletje.selected`)].length + parseInt(document.getElementById(`set${s}_B_extra`).value||0);
+        matchData.sets.push({A:teamA,B:teamB});
+    }
 
-        const div = document.createElement("div");
-        div.classList.add("section");
-        div.innerHTML=`<h3>${playerName}</h3>
-<p class="notes">Sterkste slag: ${strongest}</p>
-<p class="notes">Veel gebruikt: ${veelGebruikt.join(", ")}</p>
-<p class="notes">Verbeterpunten: ${verbeterpunten.join(", ")}</p>
-<p class="notes">Zwakste slagen (<40): ${slagen.filter((_,i)=>scores[i]<40).join(", ")}</p>
-<p class="notes">Bijna niet gespeeld (<20): ${bijnaNiet.join(", ")}</p>
-<p class="notes">Niet gespeeld: ${nietGespeeld.join(", ")}</p>
-<p class="notes">Persoonlijke notities: ${notes.filter(n=>n).join("; ")}</p>
-<canvas class="radar-chart" id="radar_${pid}"></canvas>`;
-        reportContainer.appendChild(div);
+    renderResults();
+}
 
-        summaryTXT += `Speler ${playerName}:\nSterkste slag: ${strongest}\nVeel gebruikt: ${veelGebruikt.join(", ")}\nVerbeterpunten: ${verbeterpunten.join(", ")}\nPersoonlijke notities: ${notes.filter(n=>n).join("; ")}\n\n`;
+function renderResults(){
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML="";
+
+    // Voor elke speler: tekst + radar
+    const radarsBottom = document.getElementById("radarsBottom");
+    radarsBottom.innerHTML="";
+
+    players.forEach((pid,pi)=>{
+        const section = document.createElement("div");
+        section.classList.add("section");
+        const name = playerNames[pi];
+
+        let html=`<h3>${name}</h3>`;
+        html+=`<p>Observaties: ${matchData.reflections[pid]}</p>`;
+        html+="<table border='1' cellpadding='4' style='border-collapse:collapse; width:100%'><tr><th>Slag</th><th>Score</th><th>Notitie</th></tr>";
+
+        const strokeValues = [];
+        strokes.forEach((stroke)=>{
+            const val = matchData.strokeData[pid][stroke].value;
+            const note = matchData.strokeData[pid][stroke].note || "";
+            strokeValues.push(val);
+            html+=`<tr><td>${stroke}</td><td>${val}</td><td>${note}</td></tr>`;
+        });
+        html+="</table>";
+
+        // Analyse van slagen
+        const strong = strokes.filter(s=>matchData.strokeData[pid][s].value>=70).join(", ");
+        const used = strokes.filter(s=>matchData.strokeData[pid][s].value>=50 && matchData.strokeData[pid][s].value<70).join(", ");
+        const weak = strokes.filter(s=>matchData.strokeData[pid][s].value<50 && matchData.strokeData[pid][s].value>=20).join(", ");
+        const hardly = strokes.filter(s=>matchData.strokeData[pid][s].value<20 && matchData.strokeData[pid][s].value>0).join(", ");
+        const notPlayed = strokes.filter(s=>matchData.strokeData[pid][s].value===0).join(", ");
+
+        html+=`<p><b>Sterkste slagen (>=70):</b> ${strong||'Geen'}</p>`;
+        html+=`<p><b>Goed gebruikte slagen (50-69):</b> ${used||'Geen'}</p>`;
+        html+=`<p><b>Verbeterpunten (<50):</b> ${weak||'Geen'}</p>`;
+        html+=`<p><b>Weinig gespeeld (<20):</b> ${hardly||'Geen'}</p>`;
+        html+=`<p><b>Niet gespeeld (0):</b> ${notPlayed||'Geen'}</p>`;
+
+        resultsDiv.appendChild(section);
+        section.innerHTML=html;
 
         // Radar chart
-        const ctx = document.getElementById(`radar_${pid}`).getContext('2d');
-        radarCharts.push(new Chart(ctx,{
-            type:'radar',
-            data:{labels:slagen,datasets:[{label:playerName,data:scores,backgroundColor:'rgba(33,150,243,0.2)',borderColor:'#2196F3'}]},
-            options:{responsive:true, scales:{r:{min:0,max:100,beginAtZero:true}}}
-        }));
+        const canvas = document.createElement("canvas");
+        canvas.classList.add("radar-single");
+        section.appendChild(canvas);
+
+        new Chart(canvas,{
+            type:"radar",
+            data:{
+                labels:strokes,
+                datasets:[{label:name,data:strokeValues,backgroundColor:"rgba(33,150,243,0.2)",borderColor:"#2196F3"}]
+            },
+            options:{responsive:true, scales:{r:{min:0,max:100}}}
+        });
+
+        // Onder radarsBottom voor 4 radars naast elkaar
+        const rb = document.createElement("canvas");
+        rb.classList.add("radar-single");
+        radarsBottom.appendChild(rb);
+        new Chart(rb,{
+            type:"radar",
+            data:{labels:strokes,datasets:[{label:name,data:strokeValues,backgroundColor:"rgba(33,150,243,0.2)",borderColor:"#2196F3"}]},
+            options:{responsive:true, scales:{r:{min:0,max:100}}}
+        });
     });
 
     // Setscores
-    summaryTXT += "🏆 Setscores:\n";
-    for(let i=1;i<=maxSets;i++){
-        const teamAScore = document.querySelectorAll(`.bolletje.selected[data-set="${i}"][data-team="A"]`).length + Number(document.getElementById(`set${i}_teamA_extra`).value);
-        const teamBScore = document.querySelectorAll(`.bolletje.selected[data-set="${i}"][data-team="B"]`).length + Number(document.getElementById(`set${i}_teamB_extra`).value);
-        let winner = "Gelijk";
-        if(teamAScore>teamBScore) winner="Team A";
-        else if(teamBScore>teamAScore) winner="Team B";
-        summaryTXT += `Set ${i}: ${teamAScore} - ${teamBScore} → Winnaar: ${winner}\n`;
-    }
-
-    summaryTXT += "\nhttps://sites.google.com/view/padeltrainingdatabase\n";
-
-    window.lastMatchSummaryTXT = summaryTXT;
-    window.lastMatchSummaryPDF = summaryTXT;
-    window.lastMatchSummaryWA = summaryTXT;
-
-    alert("Analyse gegenereerd!");
+    let setsHtml="<h3>🏆 Setscores</h3>";
+    let totalGamesA=0,totalGamesB=0,setsPlayed=0;
+    matchData.sets.forEach((set,i)=>{
+        if(set.A||set.B){
+            setsPlayed++;
+            totalGamesA+=set.A;
+            totalGamesB+=set.B;
+            let winner = "Gelijk";
+            if(set.A>set.B) winner="Team A";
+            else if(set.B>set.A) winner="Team B";
+            setsHtml+=`<p>Set ${i+1}: ${set.A} - ${set.B} → Winnaar: ${winner}</p>`;
+        }
+    });
+    // Winnaar match
+    let matchWinner="Gelijkspel";
+    if(totalGamesA>totalGamesB) matchWinner="Team A";
+    else if(totalGamesB>totalGamesA) matchWinner="Team B";
+    setsHtml+=`<p><b>Winnaar Match:</b> ${matchWinner}</p>`;
+    resultsDiv.insertAdjacentHTML("beforeend",setsHtml);
 }
 
-// Exports
+// Export TXT
 function exportTXT(){
-    if(!window.lastMatchSummaryTXT){alert("Genereer eerst rapport");return;}
-    const blob = new Blob([window.lastMatchSummaryTXT],{type:"text/plain"});
+    const dateStr = new Date().toLocaleString();
+    const txt = `🎾 Wedstrijdrapport ${dateStr}\nhttps://padelstijn.github.io/padel-performance/\n\n${document.getElementById("results").innerText}\n\nMeer info: https://sites.google.com/view/padeltrainingdatabase`;
+    const blob = new Blob([txt],{type:"text/plain"});
     const link = document.createElement("a");
     link.href=URL.createObjectURL(blob);
     link.download="PadelMatch.txt";
     link.click();
 }
 
+// Export PDF
 function exportPDF(){
-    if(!window.lastMatchSummaryPDF){alert("Genereer eerst rapport");return;}
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({unit:'mm',format:'a4'});
-    const lines = doc.splitTextToSize(window.lastMatchSummaryPDF, 190);
+    const doc = new jsPDF();
     let y=10;
-    lines.forEach(line=>{
-        if(y>280){doc.addPage(); y=10;}
-        doc.text(10,y,line);
-        y+=6;
-    });
+    const dateStr = new Date().toLocaleString();
+    doc.setFontSize(12);
+    doc.text(`🎾 Wedstrijdrapport ${dateStr}`,10,y); y+=10;
+    doc.text(`https://padelstijn.github.io/padel-performance/`,10,y); y+=10;
+    const lines = doc.splitTextToSize(document.getElementById("results").innerText,180);
+    lines.forEach(line=>{doc.text(line,10,y); y+=6; if(y>280){doc.addPage();y=10;}});
+    doc.text("Meer info: https://sites.google.com/view/padeltrainingdatabase",10,y);
     doc.save("PadelMatch.pdf");
 }
 
+// Export WhatsApp
 function exportWhatsApp(){
-    if(!window.lastMatchSummaryWA){alert("Genereer eerst rapport");return;}
-    window.open(`https://wa.me/?text=${encodeURIComponent(window.lastMatchSummaryWA)}`,"_blank");
+    const waText = document.getElementById("results").innerText;
+    window.open(`https://wa.me/?text=${encodeURIComponent(waText)}`,"_blank");
 }
-
-// Event listeners
-document.getElementById("makeAnalysisTop").addEventListener("click", generateAnalysis);
-document.getElementById("makeAnalysisBottom").addEventListener("click", generateAnalysis);
-document.getElementById("exportTXT").addEventListener("click", exportTXT);
-document.getElementById("exportPDF").addEventListener("click", exportPDF);
-document.getElementById("exportWhatsApp").addEventListener("click", exportWhatsApp);
-
-// Init
-initSliders();
-initSets();
