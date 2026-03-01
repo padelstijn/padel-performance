@@ -1,14 +1,12 @@
-body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; max-width: 1200px; margin-left:auto; margin-right:auto; }
-h1,h2 { text-align:center; color:#0d5c63; }
-.section { background:white; padding:15px 20px; margin-bottom:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
-input, select, textarea { width:100%; padding:6px; margin-bottom:10px; box-sizing:border-box; }
-button { background:#0d5c63; color:white; padding:10px 15px; border:none; border-radius:5px; cursor:pointer; margin-top:5px; }
+body { font-family: Arial, sans-serif; background:#f5f5f5; margin:0; padding:20px; max-width:1200px; margin:auto; }
+h1, h2 { text-align:center; }
+.section { background:white; padding:15px; margin-bottom:20px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+input, select, textarea { width:100%; padding:5px; margin-bottom:8px; }
+button { background:#0d5c63; color:white; padding:10px 15px; border:none; cursor:pointer; border-radius:5px; margin:5px; }
 button:hover { background:#083b3f; }
-.slider-group { margin-bottom:15px; padding:10px; background:#f0f0f0; border-radius:8px; }
-label { display:block; margin-bottom:5px; font-weight:bold; }
-.bolletjes-row { display:flex; gap:5px; margin-bottom:5px; }
-.bolletje { width:25px; height:25px; border-radius:50%; border:1px solid #333; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; }
-.bolletje.selected { background:#4caf50; color:#fff; }
-.radars-grid { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin-top:15px; }
-.radars-grid canvas { width:250px; height:250px; }
-textarea { resize: vertical; }
+#fileContent { background:#eee; padding:10px; border-radius:5px; max-height:150px; overflow:auto; }
+.set-row { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+.bolletje { width:25px; height:25px; border-radius:50%; border:1px solid #333; display:inline-block; cursor:pointer; text-align:center; line-height:25px; }
+.bolletje.selected { background:#4caf50; color:white; }
+.radar-chart { width:200px; height:200px; margin:10px; display:inline-block; }
+.radars4 { display:flex; justify-content:space-between; flex-wrap:wrap; }
