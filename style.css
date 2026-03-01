@@ -1,17 +1,14 @@
-body {font-family: Arial, sans-serif; margin: 20px; background:#f5f5f5;}
-h1,h2 {text-align:center;}
-label {display:block; margin-bottom:5px; font-weight:bold;}
-input[type=text], input[type=number], select, textarea {width:100%; padding:5px; margin-bottom:10px; border-radius:4px;}
-textarea {resize:vertical;}
-button {margin:5px 0; padding:10px 15px; border:none; border-radius:5px; background:#2196F3; color:#fff; cursor:pointer;}
-button:hover {background:#1976D2;}
-.slider-group {background:#fff; padding:10px; margin-bottom:10px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);}
-.slider-group label {margin-top:5px;}
-input[type=range] {width:80%;}
-input[type=number]{width:50px;}
-.set-row{display:flex; gap:5px; margin-bottom:10px; align-items:center;}
-.bolletje {width:25px;height:25px;border-radius:50%;border:1px solid #333;display:inline-block;cursor:pointer;text-align:center;line-height:25px;}
-.bolletje.selected {background:#4caf50;color:#fff;}
-#results {background:#fff; padding:15px; border-radius:8px; margin-bottom:20px;}
-canvas {background:#fff; border-radius:8px; padding:10px;}
-pre {background:#fff; padding:10px; border-radius:5px; white-space: pre-wrap;}
+body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; max-width: 1200px; margin-left:auto; margin-right:auto; }
+h1,h2 { text-align:center; color:#0d5c63; }
+.section { background:white; padding:15px 20px; margin-bottom:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+input, select, textarea { width:100%; padding:6px; margin-bottom:10px; box-sizing:border-box; }
+button { background:#0d5c63; color:white; padding:10px 15px; border:none; border-radius:5px; cursor:pointer; margin-top:5px; }
+button:hover { background:#083b3f; }
+.slider-group { margin-bottom:15px; padding:10px; background:#f0f0f0; border-radius:8px; }
+label { display:block; margin-bottom:5px; font-weight:bold; }
+.bolletjes-row { display:flex; gap:5px; margin-bottom:5px; }
+.bolletje { width:25px; height:25px; border-radius:50%; border:1px solid #333; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; }
+.bolletje.selected { background:#4caf50; color:#fff; }
+.radars-grid { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin-top:15px; }
+.radars-grid canvas { width:250px; height:250px; }
+textarea { resize: vertical; }
